@@ -39,7 +39,7 @@ Citizen.CreateThreadNow(function()
     elseif shared.framework == 'zeno' then
         playerTable = 'user_characters' -- table storing player / character data
         playerColumn = 'id'    -- primary key for identifying the character (i.e. identifier, citizenid, id)
-        vehicleTable = 'user_vehicles'  -- table storing owned vehicle data
+        vehicleTable = 'user_character_vehicles'  -- table storing owned vehicle data
         vehicleColumn = 'id'       -- primary key for identifying the vehicle (i.e. plate, vin, id)
     end
 
