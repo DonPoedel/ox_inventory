@@ -7,7 +7,7 @@ local Query = {
     INSERT_STASH = 'INSERT INTO ox_inventory (owner, name) VALUES (?, ?)',
     SELECT_GLOVEBOX = 'SELECT plate, glovebox FROM `{vehicle_table}` WHERE `{vehicle_column}` = ?',
     SELECT_TRUNK = 'SELECT plate, trunk FROM `{vehicle_table}` WHERE `{vehicle_column}` = ?',
-    SELECT_PLAYER = 'SELECT inventory FROM `{user_table}` WHERE `{user_column}` = ?',
+    SELECT_PLAYER = 'SELECT * FROM `{user_table}` WHERE `{user_column}` = ?',
     UPDATE_TRUNK = 'UPDATE `{vehicle_table}` SET trunk = ? WHERE `{vehicle_column}` = ?',
     UPDATE_GLOVEBOX = 'UPDATE `{vehicle_table}` SET glovebox = ? WHERE `{vehicle_column}` = ?',
     UPDATE_PLAYER = 'UPDATE `{user_table}` SET inventory = ? WHERE `{user_column}` = ?',
@@ -37,8 +37,8 @@ Citizen.CreateThreadNow(function()
 		vehicleTable = 'nd_vehicles'
 		vehicleColumn = 'id'
     elseif shared.framework == 'zeno' then
-        playerTable = 'user_characters' -- table storing player / character data
-        playerColumn = 'id'    -- primary key for identifying the character (i.e. identifier, citizenid, id)
+        playerTable = 'user_character_inventory_items' -- table storing player / character data
+        playerColumn = 'character_id'    -- primary key for identifying the character (i.e. identifier, citizenid, id)
         vehicleTable = 'user_character_vehicles'  -- table storing owned vehicle data
         vehicleColumn = 'id'       -- primary key for identifying the vehicle (i.e. plate, vin, id)
     end
@@ -125,8 +125,16 @@ end)
 db = {}
 
 function db.loadPlayer(identifier)
-    local inventory = MySQL.prepare.await(Query.SELECT_PLAYER, { identifier }) --[[@as string?]]
-    return inventory and json.decode(inventory)
+    local items = {}
+    local data = MySQL.prepare.await(Query.SELECT_PLAYER, { identifier })
+
+    for _, item in ipairs(data) do
+        table.insert(items, item)
+    end
+
+    print('items: ', json.encode(items))
+
+    return items
 end
 
 function db.savePlayer(owner, inventory)
