@@ -19,9 +19,9 @@ end
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function server.setPlayerData(player)
-	if not player.groups then
-		warn(("server.setPlayerData did not receive any groups for '%s'"):format(player?.name or GetPlayerName(player)))
-	end
+	-- if not player.groups then
+	-- 	warn(("server.setPlayerData did not receive any groups for '%s'"):format(player?.name or GetPlayerName(player)))
+	-- end
 
 	return {
 		source = player.source,
