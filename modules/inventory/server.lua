@@ -769,35 +769,27 @@ end
 ---@param invType string
 ---@param owner string | number | boolean
 function Inventory.Load(id, invType, owner)
-    if not invType then return end
+    if not invType then
+		return
+	end
 
-	local result
+	local returnData = {}
+	local weight = 0
+	local result = id and Mysql.query.await(
+		'SELECT * FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ' .. id
+	)
 
-    if invType == 'trunk' or invType == 'glovebox' then
-        result = id and (invType == 'trunk' and db.loadTrunk(id) or db.loadGlovebox(id))
-
-        if not result then
-            if server.randomloot then
-                return generateItems(id, 'vehicle')
-            end
-        else
-            result = result[invType]
-        end
-	elseif invType == 'dumpster' then
-		if server.randomloot then
-			return generateItems(id, invType)
+	if not result then
+		if invType == 'trunk' or invType == 'glovebox' then
+			if server.randomloot then
+				return generateItems(id, 'vehicle')
+			end
+		elseif invType == 'dumpster' then
+			if server.randomloot then
+				return generateItems(id, 'dumpster')
+			end
 		end
-	elseif id then
-		result = db.loadStash(owner or '', id)
-	end
-
-	local returnData, weight = {}, 0
-
-	if result and type(result) == 'string' then
-		result = json.decode(result)
-	end
-
-	if result then
+	else
 		local ostime = os.time()
 
 		for _, v in pairs(result) do
@@ -806,12 +798,63 @@ function Inventory.Load(id, invType, owner)
 				v.metadata = Items.CheckMetadata(v.metadata or {}, item, v.name, ostime)
 				local slotWeight = Inventory.SlotWeight(item, v)
 				weight += slotWeight
-				returnData[v.slot] = {name = item.name, label = item.label, weight = slotWeight, slot = v.slot, count = v.count, description = item.description, metadata = v.metadata, stack = item.stack, close = item.close}
+				returnData[v.slot] = {
+					name = item.name,
+					label = item.label,
+					weight = slotWeight,
+					slot = v.slot,
+					count = v.count,
+					description = item.description,
+					metadata = v.metadata,
+					stack = item.stack,
+					close = item.close
+				}
 			end
 		end
 	end
 
 	return returnData, weight
+
+
+    -- if invType == 'trunk' or invType == 'glovebox' then
+    --     result = id and (invType == 'trunk' and db.loadTrunk(id) or db.loadGlovebox(id))
+
+    --     if not result then
+    --         if server.randomloot then
+    --             return generateItems(id, 'vehicle')
+    --         end
+    --     else
+    --         result = result[invType]
+    --     end
+	-- elseif invType == 'dumpster' then
+	-- 	if server.randomloot then
+	-- 		return generateItems(id, invType)
+	-- 	end
+	-- elseif id then
+	-- 	result = db.loadStash(owner or '', id)
+	-- end
+
+	-- local returnData, weight = {}, 0
+
+	-- if result and type(result) == 'string' then
+	-- 	result = json.decode(result)
+	-- end
+
+	-- if result then
+	-- 	local ostime = os.time()
+
+	-- 	for _, v in pairs(result) do
+	-- 		local item = Items(v.name)
+	-- 		if item then
+	-- 			v.metadata = Items.CheckMetadata(v.metadata or {}, item, v.name, ostime)
+	-- 			local slotWeight = Inventory.SlotWeight(item, v)
+	-- 			weight += slotWeight
+	-- 			returnData[v.slot] = {name = item.name, label = item.label, weight = slotWeight, slot = v.slot, count = v.count, description = item.description, metadata = v.metadata, stack = item.stack, close = item.close}
+	-- 		end
+	-- 	end
+	-- end
+
+	-- return returnData, weight
 end
 
 local function assertMetadata(metadata)
@@ -2265,53 +2308,148 @@ end
 local isSaving = false
 local inventoryClearTime = GetConvarInt('inventory:cleartime', 5) * 60
 
-local function saveInventories(clearInventories)
-	if isSaving then return end
+-- local function prepareInventorySave(inv, buffer, time)
+--     local shouldSave = not inv.datastore and inv.changed
+--     local n = 0
 
+--     for k, v in pairs(inv.items) do
+--         if not Items.UpdateDurability(inv, v, Items(v.name), nil, time) and shouldSave then
+--             n += 1
+--             buffer[n] = {
+--                 name = v.name,
+--                 count = v.count,
+--                 slot = k,
+--                 metadata = next(v.metadata) and v.metadata or nil
+--             }
+--         end
+-- 	end
+
+--     if not shouldSave then return end
+
+--     local data = next(buffer) and json.encode(buffer) or nil
+--     inv.changed = false
+--     table.wipe(buffer)
+
+--     if inv.player then
+--         if shared.framework == 'esx' then return end
+
+--         return 1, { data, inv.owner }
+--     end
+
+--     if inv.type == 'trunk' then
+--         return 2, { data, inv.dbId }
+--     end
+
+--     if inv.type == 'glovebox' then
+--         return 3, { data, inv.dbId }
+--     end
+
+--     return 4, { data, inv.owner and tostring(inv.owner) or '', inv.dbId }
+-- end
+
+local function saveInventories(clearInventories)
+	if isSaving then
+		return
+	end
 	isSaving = true
+
 	local time = os.time()
-	local parameters = { {}, {}, {}, {} }
-	local total = { 0, 0, 0, 0, 0 }
-    local buffer = {}
+	local items = {}
 
 	for _, inv in pairs(Inventories) do
-        local index, data = prepareInventorySave(inv, buffer, time)
 
-        if index and data then
-            total[5] += 1
+		local shouldSave = inv.changed -- not inv.datastore and inv.changed
+		local n = 0
 
-            if index == 4 and server.bulkstashsave then
-                for i = 1, 3 do
-					total[index] += 1
-                    parameters[index][total[index]] = data[i]
-                end
-            else
-				total[index] += 1
-                parameters[index][total[index]] = data
-            end
-        end
+		for k, v in pairs(inv.items) do
+			if shouldSave and not Items.UpdateDurability(inv, v, Items(v.name), nil, time) then
+				n += 1
+				items[n] = {
+					name = v.name,
+					count = v.count,
+					slot = k,
+					metadata = next(v.metadata) and v.metadata or nil
+				}
+			end
+		end
+		if shouldSave then
+			local queries = {}
+			if inv.type == 'player' then
+				table.insert(
+					queries,
+					'DELETE FROM `user_character_inventory_items` WHERE `user_character_inventory_items`.`character_id` = ' .. inv.owner
+				)
+				for k, v in pairs(items) do
+					table.insert(
+						queries,
+						'INSERT INTO `user_character_inventory_items` (`user_character_inventory_items`.`character_id`, `user_character_inventory_items`.`slot`, `user_character_inventory_items`.`count`, `user_character_inventory_items`.`name`, `user_character_inventory_items`.`metadata`, `user_character_inventory_items`.`created_at`, `user_character_inventory_items`.`updated_at`) VALUES (' .. inv.owner .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+					)
+				end
+			else
+				table.insert(
+					queries,
+					'DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ' .. inv.dbId
+				)
+				for k, v in pairs(items) do
+					table.insert(
+						queries,
+						'INSERT INTO `world_inventory_items` (`world_inventory_items`.`inventory_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. inv.dbId .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+					)
+				end
+			end
+			table.wipe(items)
+
+			MySQL.transaction(queries, {})
+		end
 	end
 
-    if total[5] > 0 then
-	    db.saveInventories(parameters[1], parameters[2], parameters[3], parameters[4], total)
-    end
+	if clearInventories then
+		for _, inv in pairs(Inventories) do
+			if not inv.open and not inv.player then
+				-- clear inventory from memory if unused for x minutes, or on entity/netid mismatch
+				if inv.type == 'glovebox' or inv.type == 'trunk' then
+					if NetworkGetEntityFromNetworkId(inv.netid) ~= inv.entityId then
+						Inventory.Remove(inv)
+					end
+				elseif time - inv.time >= inventoryClearTime then
+					Inventory.Remove(inv)
+				end
+			end
+		end
+	end
 
-	isSaving = false
+	-- local time = os.time()
+	-- local parameters = { {}, {}, {}, {} }
+	-- local total = { 0, 0, 0, 0, 0 }
+    -- local buffer = {}
 
-    if not clearInventories then return end
+	-- for _, inv in pairs(Inventories) do
+    --     local index, data = prepareInventorySave(inv, buffer, time)
 
-    for _, inv in pairs(Inventories) do
-        if not inv.open and not inv.player then
-            -- clear inventory from memory if unused for x minutes, or on entity/netid mismatch
-            if inv.type == 'glovebox' or inv.type == 'trunk' then
-                if NetworkGetEntityFromNetworkId(inv.netid) ~= inv.entityId then
-                    Inventory.Remove(inv)
-                end
-            elseif time - inv.time >= inventoryClearTime then
-                Inventory.Remove(inv)
-            end
-        end
-    end
+    --     if index and data then
+    --         total[5] += 1
+
+    --         if index == 4 and server.bulkstashsave then
+    --             for i = 1, 3 do
+	-- 				total[index] += 1
+    --                 parameters[index][total[index]] = data[i]
+    --             end
+    --         else
+	-- 			total[index] += 1
+    --             parameters[index][total[index]] = data
+    --         end
+    --     end
+	-- end
+
+    -- if total[5] > 0 then
+	--     db.saveInventories(parameters[1], parameters[2], parameters[3], parameters[4], total)
+    -- end
+
+	-- isSaving = false
+
+    -- if not clearInventories then return end
+
+
 end
 
 lib.cron.new('*/5 * * * *', function()

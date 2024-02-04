@@ -178,7 +178,6 @@ end
 function db.saveInventories(players, trunks, gloveboxes, stashes, total)
     local promises = {}
     local start = os.nanotime()
-    print('Player Inventories: '..players)
 
     shared.info(('Saving %s inventories to the database'):format(total[5]))
 
