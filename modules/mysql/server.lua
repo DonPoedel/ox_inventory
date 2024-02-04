@@ -100,13 +100,13 @@ Citizen.CreateThreadNow(function()
             end
         end
 
-        if not glovebox then
-            MySQL.query(('ALTER TABLE `%s` ADD COLUMN `glovebox` LONGTEXT NULL'):format(vehicleTable))
-        end
+        -- if not glovebox then
+        --     MySQL.query(('ALTER TABLE `%s` ADD COLUMN `glovebox` LONGTEXT NULL'):format(vehicleTable))
+        -- end
 
-        if not trunk then
-            MySQL.query(('ALTER TABLE `%s` ADD COLUMN `trunk` LONGTEXT NULL'):format(vehicleTable))
-        end
+        -- if not trunk then
+        --     MySQL.query(('ALTER TABLE `%s` ADD COLUMN `trunk` LONGTEXT NULL'):format(vehicleTable))
+        -- end
     end
 
     -- success, result = pcall(MySQL.scalar.await, ('SELECT inventory FROM `%s`'):format(playerTable))
