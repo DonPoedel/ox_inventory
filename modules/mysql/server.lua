@@ -109,11 +109,11 @@ Citizen.CreateThreadNow(function()
         end
     end
 
-    success, result = pcall(MySQL.scalar.await, ('SELECT inventory FROM `%s`'):format(playerTable))
+    -- success, result = pcall(MySQL.scalar.await, ('SELECT inventory FROM `%s`'):format(playerTable))
 
-    if not success then
-        MySQL.query(('ALTER TABLE `%s` ADD COLUMN `inventory` LONGTEXT NULL'):format(playerTable))
-    end
+    -- if not success then
+    --     MySQL.query(('ALTER TABLE `%s` ADD COLUMN `inventory` LONGTEXT NULL'):format(playerTable))
+    -- end
 
     local clearStashes = GetConvar('inventory:clearstashes', '6 MONTH')
 
@@ -125,16 +125,8 @@ end)
 db = {}
 
 function db.loadPlayer(identifier)
-    local items = {}
-    local data = MySQL.prepare.await(Query.SELECT_PLAYER, { identifier })
-
-    for _, item in ipairs(data) do
-        table.insert(items, item)
-    end
-
-    print('items: ', json.encode(items))
-
-    return items
+    local inventory = MySQL.prepare.await(Query.SELECT_PLAYER, { identifier }) --[[@as string?]]
+    return inventory and json.decode(inventory)
 end
 
 function db.savePlayer(owner, inventory)
@@ -186,6 +178,7 @@ end
 function db.saveInventories(players, trunks, gloveboxes, stashes, total)
     local promises = {}
     local start = os.nanotime()
+    print('Player Inventories: '..players)
 
     shared.info(('Saving %s inventories to the database'):format(total[5]))
 
