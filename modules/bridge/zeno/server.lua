@@ -1,6 +1,6 @@
 local Inventory = require 'modules.inventory.server'
 
-AddEventHandler('zeno:server:onPlayerLoad', function(source, characterId)
+AddEventHandler('zeno:server:player:load', function(source, characterId)
 	-- local inventory = Inventory(source)
 	-- if not inventory then return end
 	-- inventory.player.groups[inventory.player.gang] = nil
@@ -21,6 +21,10 @@ AddEventHandler('zeno:server:onPlayerLoad', function(source, characterId)
         )
     end)
 end)
+
+AddEventHandler('zeno:server:player:unload',
+    server.playerDropped
+)
 
 -- function server.syncInventory(inv)
 -- 	local accounts = Inventory.GetAccountItemCounts(inv)
