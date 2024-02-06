@@ -2308,45 +2308,6 @@ end
 local isSaving = false
 local inventoryClearTime = GetConvarInt('inventory:cleartime', 5) * 60
 
--- local function prepareInventorySave(inv, buffer, time)
---     local shouldSave = not inv.datastore and inv.changed
---     local n = 0
-
---     for k, v in pairs(inv.items) do
---         if not Items.UpdateDurability(inv, v, Items(v.name), nil, time) and shouldSave then
---             n += 1
---             buffer[n] = {
---                 name = v.name,
---                 count = v.count,
---                 slot = k,
---                 metadata = next(v.metadata) and v.metadata or nil
---             }
---         end
--- 	end
-
---     if not shouldSave then return end
-
---     local data = next(buffer) and json.encode(buffer) or nil
---     inv.changed = false
---     table.wipe(buffer)
-
---     if inv.player then
---         if shared.framework == 'esx' then return end
-
---         return 1, { data, inv.owner }
---     end
-
---     if inv.type == 'trunk' then
---         return 2, { data, inv.dbId }
---     end
-
---     if inv.type == 'glovebox' then
---         return 3, { data, inv.dbId }
---     end
-
---     return 4, { data, inv.owner and tostring(inv.owner) or '', inv.dbId }
--- end
-
 local function saveInventories(clearInventories)
 	if isSaving then
 		return
@@ -2417,39 +2378,6 @@ local function saveInventories(clearInventories)
 			end
 		end
 	end
-
-	-- local time = os.time()
-	-- local parameters = { {}, {}, {}, {} }
-	-- local total = { 0, 0, 0, 0, 0 }
-    -- local buffer = {}
-
-	-- for _, inv in pairs(Inventories) do
-    --     local index, data = prepareInventorySave(inv, buffer, time)
-
-    --     if index and data then
-    --         total[5] += 1
-
-    --         if index == 4 and server.bulkstashsave then
-    --             for i = 1, 3 do
-	-- 				total[index] += 1
-    --                 parameters[index][total[index]] = data[i]
-    --             end
-    --         else
-	-- 			total[index] += 1
-    --             parameters[index][total[index]] = data
-    --         end
-    --     end
-	-- end
-
-    -- if total[5] > 0 then
-	--     db.saveInventories(parameters[1], parameters[2], parameters[3], parameters[4], total)
-    -- end
-
-	-- isSaving = false
-
-    -- if not clearInventories then return end
-
-
 end
 
 lib.cron.new('*/5 * * * *', function()

@@ -125,12 +125,35 @@ end)
 db = {}
 
 function db.loadPlayer(identifier)
-    local inventory = MySQL.prepare.await(Query.SELECT_PLAYER, { identifier }) --[[@as string?]]
-    return inventory and json.decode(inventory)
+    local inventory = MySQL.query.await(
+        'SELECT * FROM user_character_inventory_items WHERE character_id = "' .. identifier .. '"'
+    )
+
+    local items = {}
+    if inventory ~= nil then
+        for _, item in ipairs(inventory) do
+            table.insert(items, item)
+        end
+    end
+
+    return items
 end
 
 function db.savePlayer(owner, inventory)
-    return MySQL.prepare(Query.UPDATE_PLAYER, { inventory, owner })
+    local items = json.decode(inventory)
+    local queries = {}
+    table.insert(
+        queries,
+        'DELETE FROM `user_character_inventory_items` WHERE `user_character_inventory_items`.`character_id` = ' .. owner
+    )
+    for k, v in pairs(items) do
+        table.insert(
+            queries,
+            'INSERT INTO `user_character_inventory_items` (`user_character_inventory_items`.`character_id`, `user_character_inventory_items`.`slot`, `user_character_inventory_items`.`count`, `user_character_inventory_items`.`name`, `user_character_inventory_items`.`metadata`, `user_character_inventory_items`.`created_at`, `user_character_inventory_items`.`updated_at`) VALUES (' .. owner .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+        )
+    end
+
+    return MySQL.transaction.await(queries, {})
 end
 
 function db.saveStash(owner, dbId, inventory)
@@ -176,6 +199,7 @@ end
 ---@param stashes (InventorySaveData | string | number)[]
 ---@param total number[]
 function db.saveInventories(players, trunks, gloveboxes, stashes, total)
+    print('3^Warning this function should not be used!')
     local promises = {}
     local start = os.nanotime()
 
