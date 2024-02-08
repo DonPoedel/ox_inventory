@@ -53,13 +53,13 @@ Citizen.CreateThreadNow(function()
     local success, result = pcall(MySQL.scalar.await, 'SELECT 1 FROM ox_inventory')
 
     if not success then
-        MySQL.query([[CREATE TABLE `ox_inventory` (
-			`owner` varchar(60) DEFAULT NULL,
-			`name` varchar(100) NOT NULL,
-			`data` longtext DEFAULT NULL,
-			`lastupdated` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-			UNIQUE KEY `owner` (`owner`,`name`)
-		)]])
+        -- MySQL.query([[CREATE TABLE `ox_inventory` (
+		-- 	`owner` varchar(60) DEFAULT NULL,
+		-- 	`name` varchar(100) NOT NULL,
+		-- 	`data` longtext DEFAULT NULL,
+		-- 	`lastupdated` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+		-- 	UNIQUE KEY `owner` (`owner`,`name`)
+		-- )]])
     else
         -- Shouldn't be needed anymore; was used for some data conversion for v2.5.0 (back in March 2022)
         -- result = MySQL.query.await("SELECT owner, name FROM ox_inventory WHERE NOT owner = ''")
@@ -157,7 +157,20 @@ function db.savePlayer(owner, inventory)
 end
 
 function db.saveStash(owner, dbId, inventory)
-    return MySQL.prepare(Query.UPSERT_STASH, { inventory, owner and tostring(owner) or '', dbId })
+    local items = json.decode(inventory)
+    local queries = {}
+    table.insert(
+        queries,
+        'DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ' .. dbId
+    )
+    for k, v in pairs(items) do
+        table.insert(
+            queries,
+            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items_items`.`updated_at`) VALUES (' .. dbId .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+        )
+    end
+
+    return MySQL.transaction.await(queries, {})
 end
 
 function db.loadStash(owner, name)
@@ -165,7 +178,20 @@ function db.loadStash(owner, name)
 end
 
 function db.saveGlovebox(id, inventory)
-    return MySQL.prepare(Query.UPDATE_GLOVEBOX, { inventory, id })
+    local items = json.decode(inventory)
+    local queries = {}
+    table.insert(
+        queries,
+        'DELETE FROM `c` WHERE `world_inventory_items`.`inventory_id` = ' .. id
+    )
+    for k, v in pairs(items) do
+        table.insert(
+            queries,
+            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+        )
+    end
+
+    return MySQL.transaction.await(queries, {})
 end
 
 function db.loadGlovebox(id)
@@ -173,7 +199,20 @@ function db.loadGlovebox(id)
 end
 
 function db.saveTrunk(id, inventory)
-    return MySQL.prepare(Query.UPDATE_TRUNK, { inventory, id })
+    local items = json.decode(inventory)
+    local queries = {}
+    table.insert(
+        queries,
+        'DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ' .. id
+    )
+    for k, v in pairs(items) do
+        table.insert(
+            queries,
+            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+        )
+    end
+
+    return MySQL.transaction.await(queries, {})
 end
 
 function db.loadTrunk(id)
