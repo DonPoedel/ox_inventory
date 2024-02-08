@@ -10,7 +10,7 @@ AddEventHandler('zeno:server:player:load', function(source, character)
     server.setPlayerInventory(
         {
             source = source,
-            name = character.name,
+            name = character.fullname,
             identifier = character.id,
         }
     )
