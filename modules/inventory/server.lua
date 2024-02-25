@@ -2343,7 +2343,7 @@ local function saveInventories(clearInventories)
 				for k, v in pairs(items) do
 					table.insert(
 						queries,
-						'INSERT INTO `user_character_inventory_items` (`user_character_inventory_items`.`character_id`, `user_character_inventory_items`.`slot`, `user_character_inventory_items`.`count`, `user_character_inventory_items`.`name`, `user_character_inventory_items`.`metadata`, `user_character_inventory_items`.`created_at`, `user_character_inventory_items`.`updated_at`) VALUES (' .. inv.owner .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+						'INSERT INTO `user_character_inventory_items` (`user_character_inventory_items`.`character_id`, `user_character_inventory_items`.`slot`, `user_character_inventory_items`.`count`, `user_character_inventory_items`.`name`, `user_character_inventory_items`.`metadata`, `user_character_inventory_items`.`created_at`, `user_character_inventory_items`.`updated_at`) VALUES (' .. inv.owner .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
 					)
 				end
 			elseif inv.dbId then
@@ -2354,7 +2354,7 @@ local function saveInventories(clearInventories)
 				for k, v in pairs(items) do
 					table.insert(
 						queries,
-						'INSERT INTO `world_inventory_items` (`world_inventory_items`.`inventory_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES ("' .. inv.dbId .. '", ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+						'INSERT INTO `world_inventory_items` (`world_inventory_items`.`inventory_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES ("' .. inv.dbId .. '", ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
 					)
 				end
 			end
