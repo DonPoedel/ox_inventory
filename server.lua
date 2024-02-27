@@ -116,7 +116,9 @@ local function openInventory(source, invType, data, ignoreSecurityChecks)
 			right = Inventory(data, left)
 			if right == false then return false end
 		elseif type(data) == 'table' then
-			if data.netid then
+			if data.inventory then
+				right = Inventory(data)
+			elseif data.netid then
 				data.type = invType
 				right = Inventory(data)
 			elseif invType == 'drop' then

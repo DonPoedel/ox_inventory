@@ -100,6 +100,21 @@ local function loadInventoryData(data, player)
 	local source = source
 	local inventory
 
+	if data.hook then
+		return Inventory.Create(
+			data.id,
+			data.inventory.name,
+			data.type,
+			data.inventory.maximum_slots,
+			0,
+			data.inventory.maximum_weight,
+			false,
+			nil,
+			nil,
+			data.inventory.id
+		)
+	end
+
 	if not data.type and type(data.id) == 'string' then
 		if data.id:find('^glove') then
 			data.type = 'glovebox'
