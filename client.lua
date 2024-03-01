@@ -711,6 +711,32 @@ local function registerCommands()
 		-- No storage or no glovebox
 		if (checkVehicle == 0 or checkVehicle == 2) or (not Vehicles.glovebox[vehicleClass] and not Vehicles.glovebox.models[vehicleHash]) then return end
 
+		local npc = Entity(vehicle)
+
+        if npc ~= nil and npc.state ~= nil and npc.state.index ~= nil then
+            exports.core:call('getVehicleManager():handleOpenGloveBox', function (inventory)
+                if inventory ~= nil then
+                    local isOpen = client.openInventory(
+                        'glovebox',
+                        {
+                            id = 'interfaceManager:' .. inventory.id .. ':' .. inventory.type,
+                            type = inventory.type,
+                            inventory = inventory,
+                            hook = true,
+                            netid = NetworkGetNetworkIdFromEntity(entity),
+                        }
+                    )
+
+                    if isOpen then
+                        currentInventory.entity = vehicle
+                    end
+
+                    return
+                end
+            end, npc.state.index)
+            return
+        end
+
 		local isOpen = client.openInventory('glovebox', { id = 'glove'..GetVehicleNumberPlateText(vehicle), netid = NetworkGetNetworkIdFromEntity(vehicle) })
 
 		if isOpen then
