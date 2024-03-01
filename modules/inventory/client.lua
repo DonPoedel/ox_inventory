@@ -67,6 +67,44 @@ function Inventory.OpenTrunk(entity)
         return lib.notify({ id = 'vehicle_locked', type = 'error', description = locale('vehicle_locked') })
     end
 
+    local npc = Entity(entity)
+
+    if npc ~= nil and npc.state ~= nil and npc.state.index ~= nil then
+        exports.core:call('getVehicleManager():handleOpenTruck', function (inventory)
+            if inventory ~= nil then
+                local coords = GetEntityCoords(entity)
+
+                TaskTurnPedToFaceCoord(cache.ped, coords.x, coords.y, coords.z, 0)
+
+                if not client.openInventory(
+                    'trunk',
+                    {
+                        id = 'interfaceManager:' .. inventory.id .. ':' .. inventory.type,
+                        type = inventory.type,
+                        inventory = inventory,
+                        hook = true,
+                        netid = NetworkGetNetworkIdFromEntity(entity),
+                        entityid = entity,
+                        door = door
+                    }
+                ) then
+                    return
+                end
+
+                if type(door) == 'table' then
+                    for i = 1, #door do
+                        SetVehicleDoorOpen(entity, door[i], false, false)
+                    end
+                else
+                    SetVehicleDoorOpen(entity, door --[[@as number]], false, false)
+                end
+
+                return
+            end
+        end, npc.state.index, door)
+        return
+    end
+
     local plate = GetVehicleNumberPlateText(entity)
     local invId = 'trunk'..plate
     local coords = GetEntityCoords(entity)
