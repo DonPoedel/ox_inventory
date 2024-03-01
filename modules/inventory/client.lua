@@ -76,6 +76,10 @@ function Inventory.OpenTrunk(entity)
 
                 TaskTurnPedToFaceCoord(cache.ped, coords.x, coords.y, coords.z, 0)
 
+				if GetVehicleDoorLockStatus(entity) > 1 then
+					return lib.notify({ id = 'vehicle_locked', type = 'error', description = locale('vehicle_locked') })
+				end
+
                 if not client.openInventory(
                     'trunk',
                     {
