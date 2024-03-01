@@ -723,7 +723,7 @@ local function registerCommands()
                             type = inventory.type,
                             inventory = inventory,
                             hook = true,
-                            netid = NetworkGetNetworkIdFromEntity(entity),
+                            netid = NetworkGetNetworkIdFromEntity(vehicle),
                         }
                     )
 

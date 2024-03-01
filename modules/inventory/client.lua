@@ -70,7 +70,7 @@ function Inventory.OpenTrunk(entity)
     local npc = Entity(entity)
 
     if npc ~= nil and npc.state ~= nil and npc.state.index ~= nil then
-        exports.core:call('getVehicleManager():handleOpenTruck', function (inventory)
+        exports.core:call('getVehicleManager():handleOpenTrunk', function (inventory)
             if inventory ~= nil then
                 local coords = GetEntityCoords(entity)
 
