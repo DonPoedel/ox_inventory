@@ -2393,6 +2393,7 @@ local function saveInventories(clearInventories)
 			end
 		end
 	end
+	isSaving = false
 end
 
 lib.cron.new('*/5 * * * *', function()
