@@ -166,7 +166,7 @@ function db.saveStash(owner, dbId, inventory)
     for k, v in pairs(items) do
         table.insert(
             queries,
-            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items_items`.`updated_at`) VALUES (' .. dbId .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
+            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`inventory_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. dbId .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
         )
     end
 
@@ -187,7 +187,7 @@ function db.saveGlovebox(id, inventory)
     for k, v in pairs(items) do
         table.insert(
             queries,
-            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
         )
     end
 
@@ -208,7 +208,7 @@ function db.saveTrunk(id, inventory)
     for k, v in pairs(items) do
         table.insert(
             queries,
-            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", "' .. json.encode(v.metadata or {}) .. '", NOW(), NOW())'
+            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
         )
     end
 
