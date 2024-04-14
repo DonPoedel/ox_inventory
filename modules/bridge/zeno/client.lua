@@ -27,29 +27,40 @@ AddEventHandler('zeno:client:regionManager:playerUpdate', function(isPlayer, ped
 			OnPlayerData('dead', 1)
 		end
 
-		local groups = PlayerData.groups
-		local job = {}
-		local gang = {}
+		local groups = PlayerData.groups or {}
+
+		local hasChanges = true
+		local jobName = nil
+		local gangName = nil
 
 		if state.job ~= nil then
-			job.name = state.job.slug
-			job.level = tonumber(state.job.role.slug)
+			jobName = state.job.slug
+			local level = tonumber(state.job.role.slug)
+			if not groups[jobName] or groups[jobName] ~= level then
+				hasChanges = true
+				groups[jobName] = level
+			end
 		end
+
 		if state.gang ~= nil then
-			gang.name = state.gang.slug
-			gang.level = tonumber(state.gang.role.slug)
+			gangName = state.gang.name
+			local level = tonumber(state.gang.role.slug)
+			if not groups[gangName] or groups[gangName] ~= level then
+				hasChanges = true
+				groups[gangName] = level
+			end
 		end
 
-		if not groups[job.slug]
-			or not groups[gang.slug]
-			or groups[job.slug] ~= tonumber(job.role.slug)
-			or groups[gang.slug] ~= tonumber(role.slug)
-		then
-			PlayerData.groups = {
-				[job.slug] = tonumber(job.role.slug),
-				[gang.slug] = tonumber(gang.role.slug),
-			}
+		if hasChanges then
+			local newGroups = {}
+			if jobName ~= nil then
+				newGroups[jobName] = groups[jobName]
+			end
+			if gangName ~= nil then
+				newGroups[gangName] = groups[gangName]
+			end
 
+			PlayerData.groups = newGroups
 			OnPlayerData('groups', PlayerData.groups)
 		end
     end
