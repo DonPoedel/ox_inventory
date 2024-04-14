@@ -21,7 +21,7 @@ RegisterNetEvent('zeno:client:player:unload',
     client.onLogout
 )
 
-AddEventHandler('zeno:client:regionManager:playerUpdate', function(source, isPlayer, ped, index, state)
+AddEventHandler('zeno:client:regionManager:playerUpdate', function(isPlayer, ped, index, state)
 	if state ~= nil and isPlayer then
 		if state.status.health == 0 then
 			OnPlayerData('dead', 1)
@@ -36,7 +36,7 @@ AddEventHandler('zeno:client:regionManager:playerUpdate', function(source, isPla
 			job.level = tonumber(state.job.role.slug)
 		end
 		if state.gang ~= nil then
-			gang.name = state.gang.name
+			gang.name = state.gang.slug
 			gang.level = tonumber(state.gang.role.slug)
 		end
 
