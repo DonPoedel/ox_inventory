@@ -32,11 +32,18 @@ Citizen.CreateThreadNow(function()
 		playerColumn = 'charid'
 		vehicleTable = 'nd_vehicles'
 		vehicleColumn = 'id'
+    elseif shared.framework == 'qbx' then
+        playerTable = 'players'
+        playerColumn = 'citizenid'
+        vehicleTable = 'player_vehicles'
+        vehicleColumn = 'id'
     elseif shared.framework == 'zeno' then
         playerTable = 'user_character_inventory_items' -- table storing player / character data
         playerColumn = 'character_id'    -- primary key for identifying the character (i.e. identifier, citizenid, id)
         vehicleTable = 'user_character_vehicles'  -- table storing owned vehicle data
         vehicleColumn = 'id'       -- primary key for identifying the vehicle (i.e. plate, vin, id)
+    else
+        return
     end
 
     for k, v in pairs(Query) do
