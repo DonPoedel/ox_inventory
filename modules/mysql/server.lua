@@ -118,11 +118,11 @@ Citizen.CreateThreadNow(function()
     --     MySQL.query(('ALTER TABLE `%s` ADD COLUMN `inventory` LONGTEXT NULL'):format(playerTable))
     -- end
 
-    local clearStashes = GetConvar('inventory:clearstashes', '6 MONTH')
+    -- local clearStashes = GetConvar('inventory:clearstashes', '6 MONTH')
 
-    if clearStashes ~= '' then
-        pcall(MySQL.query.await, ('DELETE FROM ox_inventory WHERE lastupdated < (NOW() - INTERVAL %s)'):format(clearStashes))
-    end
+    -- if clearStashes ~= '' then
+    --     pcall(MySQL.query.await, ('DELETE FROM ox_inventory WHERE lastupdated < (NOW() - INTERVAL %s)'):format(clearStashes))
+    -- end
 end)
 
 db = {}
