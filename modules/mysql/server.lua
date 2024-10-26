@@ -135,6 +135,7 @@ function db.loadPlayer(identifier)
     local items = {}
     if inventory ~= nil then
         for _, item in ipairs(inventory) do
+            item.metadata = json.decode(item.metadata)
             table.insert(items, item)
         end
     end

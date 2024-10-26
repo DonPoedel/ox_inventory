@@ -843,6 +843,7 @@ function Inventory.Load(id, invType, owner)
 		local ostime = os.time()
 
 		for _, v in pairs(result) do
+			v.metadata = json.decode(v.metadata)
 			local item = Items(v.name)
 			if item then
 				v.metadata = Items.CheckMetadata(v.metadata or {}, item, v.name, ostime)
