@@ -147,16 +147,50 @@ function db.savePlayer(owner, inventory)
     local queries = {}
     table.insert(
         queries,
-        'DELETE FROM `user_character_inventory_items` WHERE `user_character_inventory_items`.`character_id` = ' .. owner
+        {
+            [[
+                DELETE FROM `user_character_inventory_items` WHERE `user_character_inventory_items`.`character_id` = ?
+            ]],
+            {
+                owner
+            }
+        }
     )
     for k, v in pairs(items) do
         table.insert(
             queries,
-            'INSERT INTO `user_character_inventory_items` (`user_character_inventory_items`.`character_id`, `user_character_inventory_items`.`slot`, `user_character_inventory_items`.`count`, `user_character_inventory_items`.`name`, `user_character_inventory_items`.`metadata`, `user_character_inventory_items`.`created_at`, `user_character_inventory_items`.`updated_at`) VALUES (' .. owner .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
+            {
+                [[
+                    INSERT INTO `user_character_inventory_items` (
+                        `user_character_inventory_items`.`character_id`,
+                        `user_character_inventory_items`.`slot`,
+                        `user_character_inventory_items`.`count`,
+                        `user_character_inventory_items`.`name`,
+                        `user_character_inventory_items`.`metadata`,
+                        `user_character_inventory_items`.`created_at`,
+                        `user_character_inventory_items`.`updated_at`
+                    ) VALUES (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        NOW(),
+                        NOW()
+                    )
+                ]],
+                {
+                    owner,
+                    v.slot,
+                    v.count,
+                    v.name,
+                    json.encode(v.metadata or {}),
+                }
+            }
         )
     end
 
-    return MySQL.transaction.await(queries, {})
+    return MySQL.transaction.await(queries)
 end
 
 function db.saveStash(owner, dbId, inventory)
@@ -164,16 +198,50 @@ function db.saveStash(owner, dbId, inventory)
     local queries = {}
     table.insert(
         queries,
-        'DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ' .. dbId
+        {
+            [[
+                DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ?
+            ]],
+            {
+                dbId
+            }
+        }
     )
     for k, v in pairs(items) do
         table.insert(
             queries,
-            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`inventory_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. dbId .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
+            {
+                [[
+                    INSERT INTO `world_inventory_items` (
+                        `world_inventory_items`.`inventory_id`,
+                        `world_inventory_items`.`slot`,
+                        `world_inventory_items`.`count`,
+                        `world_inventory_items`.`name`,
+                        `world_inventory_items`.`metadata`,
+                        `world_inventory_items`.`created_at`,
+                        `world_inventory_items`.`updated_at`
+                    ) VALUES (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        NOW(),
+                        NOW()
+                    )
+                ]],
+                {
+                    dbId,
+                    v.slot,
+                    v.count,
+                    v.name,
+                    json.encode(v.metadata or {}),
+                }
+            }
         )
     end
 
-    return MySQL.transaction.await(queries, {})
+    return MySQL.transaction.await(queries)
 end
 
 function db.loadStash(owner, name)
@@ -185,16 +253,50 @@ function db.saveGlovebox(id, inventory)
     local queries = {}
     table.insert(
         queries,
-        'DELETE FROM `c` WHERE `world_inventory_items`.`inventory_id` = ' .. id
+        {
+            [[
+                DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ?
+            ]],
+            {
+                id
+            }
+        }
     )
     for k, v in pairs(items) do
         table.insert(
             queries,
-            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
+            {
+                [[
+                    INSERT INTO `world_inventory_items` (
+                        `world_inventory_items`.`inventory_id`,
+                        `world_inventory_items`.`slot`,
+                        `world_inventory_items`.`count`,
+                        `world_inventory_items`.`name`,
+                        `world_inventory_items`.`metadata`,
+                        `world_inventory_items`.`created_at`,
+                        `world_inventory_items`.`updated_at`
+                    ) VALUES (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        NOW(),
+                        NOW()
+                    )
+                ]],
+                {
+                    id,
+                    v.slot,
+                    v.count,
+                    v.name,
+                    json.encode(v.metadata or {}),
+                }
+            }
         )
     end
 
-    return MySQL.transaction.await(queries, {})
+    return MySQL.transaction.await(queries)
 end
 
 function db.loadGlovebox(id)
@@ -206,16 +308,52 @@ function db.saveTrunk(id, inventory)
     local queries = {}
     table.insert(
         queries,
-        'DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ' .. id
+        {
+            [[
+                DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ?
+            ]],
+            {
+                id
+            }
+        }
     )
     for k, v in pairs(items) do
-        table.insert(
-            queries,
-            'INSERT INTO `world_inventory_items` (`world_inventory_items`.`character_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES (' .. id .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
-        )
+        for k, v in pairs(items) do
+            table.insert(
+                queries,
+                {
+                    [[
+                        INSERT INTO `world_inventory_items` (
+                            `world_inventory_items`.`inventory_id`,
+                            `world_inventory_items`.`slot`,
+                            `world_inventory_items`.`count`,
+                            `world_inventory_items`.`name`,
+                            `world_inventory_items`.`metadata`,
+                            `world_inventory_items`.`created_at`,
+                            `world_inventory_items`.`updated_at`
+                        ) VALUES (
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            NOW(),
+                            NOW()
+                        )
+                    ]],
+                    {
+                        id,
+                        v.slot,
+                        v.count,
+                        v.name,
+                        json.encode(v.metadata or {}),
+                    }
+                }
+            )
+        end
     end
 
-    return MySQL.transaction.await(queries, {})
+    return MySQL.transaction.await(queries)
 end
 
 function db.loadTrunk(id)

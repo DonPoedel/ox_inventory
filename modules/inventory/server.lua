@@ -2397,23 +2397,92 @@ local function saveInventories(clearInventories)
 			if inv.type == 'player' then
 				table.insert(
 					queries,
-					'DELETE FROM `user_character_inventory_items` WHERE `user_character_inventory_items`.`character_id` = ' .. inv.owner
+					{
+						[[
+							DELETE FROM `user_character_inventory_items` WHERE `user_character_inventory_items`.`character_id` = ?
+						]],
+						{
+							inv.owner
+						}
+					}
 				)
 				for k, v in pairs(items) do
 					table.insert(
 						queries,
-						'INSERT INTO `user_character_inventory_items` (`user_character_inventory_items`.`character_id`, `user_character_inventory_items`.`slot`, `user_character_inventory_items`.`count`, `user_character_inventory_items`.`name`, `user_character_inventory_items`.`metadata`, `user_character_inventory_items`.`created_at`, `user_character_inventory_items`.`updated_at`) VALUES (' .. inv.owner .. ', ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
+						{
+							[[
+								INSERT INTO `user_character_inventory_items` (
+									`user_character_inventory_items`.`character_id`,
+									`user_character_inventory_items`.`slot`,
+									`user_character_inventory_items`.`count`,
+									`user_character_inventory_items`.`name`,
+									`user_character_inventory_items`.`metadata`,
+									`user_character_inventory_items`.`created_at`,
+									`user_character_inventory_items`.`updated_at`
+								) VALUES (
+									?,
+									?,
+									?,
+									?,
+									?,
+									NOW(),
+									NOW()
+								)
+							]],
+							{
+								inv.owner,
+								v.slot,
+								v.count,
+								v.name,
+								json.encode(v.metadata or {}),
+							}
+						}
 					)
 				end
 			elseif inv.dbId then
 				table.insert(
 					queries,
-					'DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = "' .. inv.dbId .. '"'
+					{
+						[[
+							DELETE FROM `world_inventory_items` WHERE `world_inventory_items`.`inventory_id` = ?
+						]],
+						{
+							inv.dbId
+						}
+					}
 				)
+
 				for k, v in pairs(items) do
 					table.insert(
 						queries,
-						'INSERT INTO `world_inventory_items` (`world_inventory_items`.`inventory_id`, `world_inventory_items`.`slot`, `world_inventory_items`.`count`, `world_inventory_items`.`name`, `world_inventory_items`.`metadata`, `world_inventory_items`.`created_at`, `world_inventory_items`.`updated_at`) VALUES ("' .. inv.dbId .. '", ' .. v.slot .. ', ' .. v.count .. ', "' .. v.name .. '", \'' .. json.encode(v.metadata or {}) .. '\', NOW(), NOW())'
+						{
+							[[
+								INSERT INTO `world_inventory_items` (
+									`world_inventory_items`.`inventory_id`,
+									`world_inventory_items`.`slot`,
+									`world_inventory_items`.`count`,
+									`world_inventory_items`.`name`,
+									`world_inventory_items`.`metadata`,
+									`world_inventory_items`.`created_at`,
+									`world_inventory_items`.`updated_at`
+								) VALUES (
+									?,
+									?,
+									?,
+									?,
+									?,
+									NOW(),
+									NOW()
+								)
+							]],
+							{
+								inv.dbId,
+								v.slot,
+								v.count,
+								v.name,
+								json.encode(v.metadata or {}),
+							}
+						}
 					)
 				end
 			end
